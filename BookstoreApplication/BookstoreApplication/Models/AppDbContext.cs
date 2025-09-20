@@ -41,10 +41,17 @@ namespace BookstoreApplication.Models
                 cfg.Property(a => a.Biography)
                     .HasMaxLength(2000)
                     .IsRequired();
+
+                cfg.Property(a => a.DateOfBirth)
+                    .HasColumnName("Birthday");
             });
 
             modelBuilder.Entity<AuthorAward>(cfg =>
             {
+                cfg.ToTable("AuthorAwardBridge", t =>
+                    t.HasCheckConstraint("CK_AuthorAward_YearAwarded",
+                                        "\"YearAwarded\" >= 1800 AND \"YearAwarded\" <= EXTRACT(YEAR FROM CURRENT_DATE)"));
+
                 cfg.HasKey(x => new { x.AuthorId, x.AwardId, x.YearAwarded });
 
                 cfg.HasOne(x => x.Author)
@@ -59,8 +66,14 @@ namespace BookstoreApplication.Models
 
                 cfg.Property(x => x.YearAwarded)
                     .IsRequired();
+            });
 
-                cfg.ToTable(t => t.HasCheckConstraint("CK_AuthorAward_YearAwarded", "\"YearAwarded\" >= 1800 AND \"YearAwarded\" <= EXTRACT(YEAR FROM CURRENT_DATE)"));
+            modelBuilder.Entity<Book>(cfg =>
+            {
+                cfg.HasOne(b => b.Publisher)
+                    .WithMany()
+                    .HasForeignKey(b => b.PublisherId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

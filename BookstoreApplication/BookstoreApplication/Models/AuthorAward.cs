@@ -1,4 +1,6 @@
-﻿namespace BookstoreApplication.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BookstoreApplication.Models
 {
     public class AuthorAward
     {

@@ -1,6 +1,7 @@
-﻿using BookstoreApplication.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using BookstoreApplication.Models;
-using Microsoft.AspNetCore.Mvc;
+using BookstoreApplication.Repositories;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,75 +11,59 @@ namespace BookstoreApplication.Controllers
     [ApiController]
     public class PublishersController : ControllerBase
     {
+        private readonly IPublisherRepository _publishers;
+
+        public PublishersController(IPublisherRepository publishers)
+        {
+            _publishers = publishers;
+        }
+
         // GET: api/publishers
         [HttpGet]
-        public IActionResult GetAll()
-        {
-            return Ok(DataStore.Publishers);
-        }
+        public async Task<IActionResult> GetAll()
+            => Ok(await _publishers.GetAllAsync());
 
         // GET api/publishers/5
         [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
+        public async Task<IActionResult> GetOne(int id)
         {
-            var publisher = DataStore.Publishers.FirstOrDefault(a => a.Id == id);
-            if (publisher == null)
-            {
-                return NotFound();
-            }
-            return Ok(publisher);
+            var items = await _publishers.GetByIdAsync(id);
+            return items is null ? NotFound() : Ok(items);
         }
 
-        // POST api/publishers
         [HttpPost]
-        public IActionResult Post(Publisher publisher)
+        public async Task<IActionResult> Post([FromBody] Publisher dto)
         {
-            publisher.Id = DataStore.GetNewPublisherId();
-            DataStore.Publishers.Add(publisher);
-            return Ok(publisher);
+            var created = await _publishers.AddAsync(dto);
+            await _publishers.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
         }
 
         // PUT api/publishers/5
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, Publisher publisher)
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Put(int id, [FromBody] Publisher dto)
         {
-            if (id != publisher.Id)
-            {
-                return BadRequest();
-            }
+            if (id != dto.Id) return BadRequest("ID mismatch");
+            if (!await _publishers.ExistsAsync(id)) return NotFound();
 
-            var existingPublisher = DataStore.Publishers.FirstOrDefault(a => a.Id == id);
-            if (existingPublisher == null)
-            {
-                return NotFound();
-            }
-
-            int index = DataStore.Publishers.IndexOf(existingPublisher);
-            if (index == -1)
-            {
-                return NotFound();
-
-            }
-
-            DataStore.Publishers[index] = publisher;
-            return Ok(publisher);
+            await _publishers.UpdateAsync(dto);
+            await _publishers.SaveChangesAsync();
+            return Ok(dto);
         }
 
-        // DELETE api/publishers/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var publisher = DataStore.Publishers.FirstOrDefault(a => a.Id == id);
-            if (publisher == null)
+            try
             {
-                return NotFound();
+                await _publishers.DeleteAsync(id);
+                await _publishers.SaveChangesAsync();
+                return NoContent();
             }
-            DataStore.Publishers.Remove(publisher);
-
-            // kaskadno brisanje svih knjiga obrisanog izdavača
-            DataStore.Books.RemoveAll(b => b.PublisherId == id);
-
-            return NoContent();
+            catch (DbUpdateException)
+            {
+                return Conflict("Izdavac ne moze da ga obrise jer postoje knjige koje ga referenciraju.");
+            }
         }
     }
 }

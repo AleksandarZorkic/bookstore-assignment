@@ -1,84 +1,50 @@
-﻿using BookstoreApplication.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using BookstoreApplication.Models;
-using Microsoft.AspNetCore.Mvc;
+using BookstoreApplication.Repositories;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+namespace BookstoreApplication.Controllers;
 
-namespace BookstoreApplication.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class AuthorsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthorsController : ControllerBase
+    private readonly IAuthorRepository _authors;
+    public AuthorsController(IAuthorRepository authors) => _authors = authors;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll() => Ok(await _authors.GetAllAsync());
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetOne(int id)
     {
-        // GET: api/authors
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            return Ok(DataStore.Authors);
-        }
+        var a = await _authors.GetByIdAsync(id);
+        return a is null ? NotFound() : Ok(a);
+    }
 
-        // GET api/authors/5
-        [HttpGet("{id}")]
-        public IActionResult GetOne(int id)
-        {
-            var author = DataStore.Authors.FirstOrDefault(a => a.Id == id);
-            if (author == null)
-            {
-                return NotFound();
-            }
-            return Ok(author);
-        }
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] Author dto)
+    {
+        var created = await _authors.AddAsync(dto);
+        await _authors.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
+    }
 
-        // POST api/authors
-        [HttpPost]
-        public IActionResult Post(Author author)
-        {
-            author.Id = DataStore.GetNewAuthorId();
-            DataStore.Authors.Add(author);
-            return Ok(author);
-        }
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Put(int id, [FromBody] Author dto)
+    {
+        if (id != dto.Id) return BadRequest("ID mismatch.");
+        if (!await _authors.ExistsAsync(id)) return NotFound();
 
-        // PUT api/authors/5
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, Author author)
-        {
-            if (id != author.Id)
-            {
-                return BadRequest();
-            }
+        await _authors.UpdateAsync(dto);
+        await _authors.SaveChangesAsync();
+        return Ok(dto);
+    }
 
-            var existingAuthor = DataStore.Authors.FirstOrDefault(a => a.Id == id);
-            if (existingAuthor == null)
-            {
-                return NotFound();
-            }
-
-            int index = DataStore.Authors.IndexOf(existingAuthor);
-            if (index == -1)
-            {
-                return NotFound();
-                
-            }
-
-            DataStore.Authors[index] = author;
-            return Ok(author);
-        }
-
-        // DELETE api/authors/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var author = DataStore.Authors.FirstOrDefault(a => a.Id == id);
-            if (author == null)
-            {
-                return NotFound();
-            }
-            DataStore.Authors.Remove(author);
-
-            // kaskadno brisanje svih knjiga obrisanog autora
-            DataStore.Books.RemoveAll(b => b.AuthorId == id);
-
-            return NoContent();
-        }
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _authors.DeleteAsync(id);
+        await _authors.SaveChangesAsync();
+        return NoContent();
     }
 }

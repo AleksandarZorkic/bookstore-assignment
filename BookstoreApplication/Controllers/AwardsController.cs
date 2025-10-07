@@ -2,15 +2,16 @@
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services;
+using BookstoreApplication.Services.Interfaces;
 
 namespace BookstoreApplication.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthorsController : ControllerBase
+public class AwardsController : ControllerBase
 {
-    private readonly IAuthorService _service;
-    public AuthorsController(IAuthorService service) => _service = service;
+    private readonly IAwardService _service;
+    public AwardsController(IAwardService service) => _service = service;
 
     [HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
@@ -20,14 +21,14 @@ public class AuthorsController : ControllerBase
         => (await _service.GetByIdAsync(id)) is { } a ? Ok(a) : NotFound();
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] Author dto)
+    public async Task<IActionResult> Post([FromBody] Award dto)
     {
         var created = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Put(int id, [FromBody] Author dto)
+    public async Task<IActionResult> Put(int id, [FromBody] Award dto)
     {
         await _service.UpdateAsync(id, dto);
         return Ok(dto);

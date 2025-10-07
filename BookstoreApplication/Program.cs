@@ -1,5 +1,10 @@
-using BookstoreApplication.Models;
 using Microsoft.EntityFrameworkCore;
+using BookstoreApplication;
+using BookstoreApplication.Repositories.Interfaces;
+using BookstoreApplication.Repositories.Implementations;
+using BookstoreApplication.Services;
+using BookstoreApplication.Services.Implementations;
+using BookstoreApplication.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +24,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()
 ));
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<IPublisherRepository, PublisherRepository>();
+builder.Services.AddScoped<IAwardRepository, AwardRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IPublisherService, PublisherService>();
+builder.Services.AddScoped<IAwardService, AwardService>();
+builder.Services.AddScoped<IBookService, BookService>();
 
 var app = builder.Build();
 

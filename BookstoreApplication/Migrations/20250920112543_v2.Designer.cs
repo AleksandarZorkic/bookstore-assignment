@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookstoreApplication.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250916195854_initial")]
-    partial class initial
+    [Migration("20250920112543_v2")]
+    partial class v2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,18 +34,71 @@ namespace BookstoreApplication.Migrations
 
                     b.Property<string>("Biography")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("Birthday");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Authors");
+                });
+
+            modelBuilder.Entity("BookstoreApplication.Models.AuthorAward", b =>
+                {
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AwardId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YearAwarded")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AuthorId", "AwardId", "YearAwarded");
+
+                    b.HasIndex("AwardId");
+
+                    b.ToTable("AuthorAwardBridge", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AuthorAward_YearAwarded", "\"YearAwarded\" >= 1800 AND \"YearAwarded\" <= EXTRACT(YEAR FROM CURRENT_DATE)");
+                        });
+                });
+
+            modelBuilder.Entity("BookstoreApplication.Models.Award", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("StartYear")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Awards", t =>
+                        {
+                            t.HasCheckConstraint("CK_Award_StartYear", "\"StartYear\" >= 1800 AND \"StartYear\" <= EXTRACT(YEAR FROM CURRENT_DATE)");
+                        });
                 });
 
             modelBuilder.Entity("BookstoreApplication.Models.Book", b =>
@@ -110,6 +163,25 @@ namespace BookstoreApplication.Migrations
                     b.ToTable("Publishers");
                 });
 
+            modelBuilder.Entity("BookstoreApplication.Models.AuthorAward", b =>
+                {
+                    b.HasOne("BookstoreApplication.Models.Author", "Author")
+                        .WithMany("AuthorAwards")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookstoreApplication.Models.Award", "Award")
+                        .WithMany("AuthorAwards")
+                        .HasForeignKey("AwardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Award");
+                });
+
             modelBuilder.Entity("BookstoreApplication.Models.Book", b =>
                 {
                     b.HasOne("BookstoreApplication.Models.Author", "Author")
@@ -121,12 +193,22 @@ namespace BookstoreApplication.Migrations
                     b.HasOne("BookstoreApplication.Models.Publisher", "Publisher")
                         .WithMany()
                         .HasForeignKey("PublisherId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Author");
 
                     b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("BookstoreApplication.Models.Author", b =>
+                {
+                    b.Navigation("AuthorAwards");
+                });
+
+            modelBuilder.Entity("BookstoreApplication.Models.Award", b =>
+                {
+                    b.Navigation("AuthorAwards");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,13 @@
+﻿using BookstoreApplication.Models;
+
+namespace BookstoreApplication.Services.Interfaces
+{
+    public interface IBookService
+    {
+        Task<List<Book>> GetAllAsync(CancellationToken ct = default);
+        Task <Book?> GetByIdAsync(int id, CancellationToken ct = default);
+        Task<Book> CreateAsync(Book dto, CancellationToken ct = default);
+        Task<Book> UpdateAsync(int id, Book dto, CancellationToken ct = default);
+        Task DeleteAsync(int id, CancellationToken ct = default);
+    }
+}

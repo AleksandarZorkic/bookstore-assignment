@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Models;
+﻿using BookstoreApplication.Exceptions;
+using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
 
@@ -24,8 +25,8 @@ namespace BookstoreApplication.Services.Implementations
 
         public async Task UpdateAsync(int id, Award dto, CancellationToken ct = default)
         {
-            if (id != dto.Id) throw new ArgumentException("ID mismatch.");
-            if (!await _awards.ExistsAsync(id)) throw new KeyNotFoundException();
+            if (id != dto.Id) throw new BadRequestException("ID mismatch.");
+            if (!await _awards.ExistsAsync(id)) throw new NotFoundException(id);
 
             await _awards.UpdateAsync(dto);
             await _awards.SaveChangesAsync();

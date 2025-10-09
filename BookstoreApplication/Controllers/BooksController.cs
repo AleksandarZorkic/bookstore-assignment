@@ -30,7 +30,7 @@ namespace BookstoreApplication.Controllers
             return CreatedAtAction(nameof(GotOne), new { id = created.Id }, created);
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}")] 
         public async Task<IActionResult> Put(int id, [FromBody] Book dto)
             => Ok(await _service.UpdateAsync(id, dto));
 

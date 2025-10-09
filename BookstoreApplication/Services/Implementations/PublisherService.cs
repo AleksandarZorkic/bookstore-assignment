@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Models;
+﻿using BookstoreApplication.Exceptions;
+using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
 
@@ -9,7 +10,7 @@ namespace BookstoreApplication.Services.Implementations
 
         private readonly IPublisherRepository _publishers;
 
-        public PublisherService(IPublisherRepository authors) => _publishers = authors;
+        public PublisherService(IPublisherRepository publishers) => _publishers = publishers;
 
         public Task<List<Publisher>> GetAllAsync(CancellationToken ct = default)
             => _publishers.GetAllAsync();
@@ -26,8 +27,8 @@ namespace BookstoreApplication.Services.Implementations
 
         public async Task UpdateAsync(int id, Publisher dto, CancellationToken ct = default)
         {
-            if (id != dto.Id) throw new ArgumentException("ID mismatch.");
-            if (!await _publishers.ExistsAsync(id)) throw new KeyNotFoundException();
+            if (id != dto.Id) throw new BadRequestException("ID mismatch.");
+            if (!await _publishers.ExistsAsync(id)) throw new NotFoundException(id);
 
             await _publishers.UpdateAsync(dto);
             await _publishers.SaveChangesAsync();
@@ -35,6 +36,7 @@ namespace BookstoreApplication.Services.Implementations
 
         public async Task DeleteAsync(int id, CancellationToken ct = default)
         {
+            if (!await _publishers.ExistsAsync(id)) throw new NotFoundException(id);
             await _publishers.DeleteAsync(id);
             await _publishers.SaveChangesAsync();
         }

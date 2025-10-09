@@ -6,8 +6,16 @@ using BookstoreApplication.Repositories.Implementations;
 using BookstoreApplication.Services;
 using BookstoreApplication.Services.Implementations;
 using BookstoreApplication.Services.Interfaces;
+using BookstoreApplication.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // EF Core + Npgsql
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -37,6 +45,8 @@ builder.Services.AddScoped<IBookService, BookService>();
 
 builder.Services.AddAutoMapper(typeof(BookstoreApplication.Mapping.MappingProfile).Assembly);
 
+builder.Services.AddGlobalExceptionHandling();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -44,6 +54,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseGlobalExceptionHandling();
 
 app.UseCors();
 app.UseAuthorization();

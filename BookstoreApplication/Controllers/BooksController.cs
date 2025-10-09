@@ -19,8 +19,10 @@ namespace BookstoreApplication.Controllers
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GotOne(int id)
-            => (await _service.GetByIdAsync(id)) is { } b ? Ok(b) : NotFound();
-
+        {
+            var dto = await _service.GetByIdAsync(id);
+            return dto is null ? NotFound() : Ok(dto);
+        }
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Book dto)
         {

@@ -8,6 +8,7 @@ using BookstoreApplication.Services.Implementations;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.Middleware;
 using Serilog;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,13 @@ builder.Services.AddAutoMapper(typeof(BookstoreApplication.Mapping.MappingProfil
 builder.Services.AddGlobalExceptionHandling();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+    mapper.ConfigurationProvider.AssertConfigurationIsValid();
+}
+
 
 if (app.Environment.IsDevelopment())
 {

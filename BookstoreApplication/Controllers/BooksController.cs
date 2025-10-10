@@ -18,7 +18,7 @@ namespace BookstoreApplication.Controllers
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GotOne(int id)
+        public async Task<IActionResult> GetOne(int id)
         {
             var dto = await _service.GetByIdAsync(id);
             return dto is null ? NotFound() : Ok(dto);
@@ -27,7 +27,7 @@ namespace BookstoreApplication.Controllers
         public async Task<IActionResult> Post([FromBody] Book dto)
         {
             var created = await _service.CreateAsync(dto);
-            return CreatedAtAction(nameof(GotOne), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
         }
 
         [HttpPut("{id:int}")] 

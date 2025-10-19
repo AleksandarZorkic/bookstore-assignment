@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Exceptions;
+﻿using BookstoreApplication.DTOs;
+using BookstoreApplication.Exceptions;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
@@ -38,6 +39,24 @@ namespace BookstoreApplication.Services.Implementations
             if (!await _authors.ExistsAsync(id)) throw new NotFoundException(id);
             await _authors.DeleteAsync(id);
             await _authors.SaveChangesAsync();
+        }
+
+        public async Task<PaginatedResult<Author>> GetPageAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+        {
+            if (pageNumber < 1) throw new BadRequestException("page number mora biti >= 1.");
+            if (pageSize < 1 || pageSize > 100) throw new BadRequestException("pageSize mora biti u posegu od 1 do 100.");
+
+            var (items, total) = await _authors.GetPagedAsync(pageNumber, pageSize);
+            var totalPage = (int)Math.Ceiling(total / (double)pageSize);
+
+            return new PaginatedResult<Author>
+            {
+                Items = items,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = total,
+                TotalPages = Math.Max(1, totalPage)
+            };
         }
     }
 }

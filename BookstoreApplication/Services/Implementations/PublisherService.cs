@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Exceptions;
+﻿using System.Reflection.Metadata.Ecma335;
+using BookstoreApplication.Exceptions;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
@@ -39,6 +40,19 @@ namespace BookstoreApplication.Services.Implementations
             if (!await _publishers.ExistsAsync(id)) throw new NotFoundException(id);
             await _publishers.DeleteAsync(id);
             await _publishers.SaveChangesAsync();
+        }
+        public async Task<List<Publisher>> GetAllSortedAsync(string? sort, CancellationToken ct = default)
+        {
+            var list = await _publishers.GetAllAsync();
+
+            return (sort ?? "NameAsc").ToLower() switch
+            {
+                "nameasc" => list.OrderBy(p => p.Name).ToList(),
+                "namedesc" => list.OrderByDescending(p => p.Name).ToList(),
+                "addressasc" => list.OrderBy(p => p.Address).ToList(),
+                "addressdesc" => list.OrderByDescending(p => p.Address).ToList(),
+                _ => list.OrderBy(p => p.Name).ToList()
+            };
         }
     }
 }

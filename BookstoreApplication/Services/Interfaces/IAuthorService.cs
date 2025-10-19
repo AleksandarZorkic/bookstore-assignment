@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Models;
+﻿using BookstoreApplication.DTOs;
+using BookstoreApplication.Models;
 
 namespace BookstoreApplication.Services
 {
@@ -9,5 +10,6 @@ namespace BookstoreApplication.Services
         Task<Author> CreateAsync(Author dto, CancellationToken ct = default);
         Task UpdateAsync(int id, Author dto, CancellationToken ct = default);
         Task DeleteAsync(int id, CancellationToken ct = default);
+        Task<PaginatedResult<Author>> GetPageAsync(int pageNumber, int pageSize, CancellationToken ct = default);
     }
 }

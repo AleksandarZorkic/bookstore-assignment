@@ -2,6 +2,9 @@
 
 namespace BookstoreApplication.Repositories.Interfaces
 {
-    public interface IAuthorRepository : IRepository<Author> { }
+    public interface IAuthorRepository : IRepository<Author> 
+    {
+        Task<(List<Author> Items, int TotalCount)> GetPagedAsync(int pageNumber, int pageSize);
+    }
 
 }

@@ -38,4 +38,10 @@ public class AuthorsController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+    [HttpGet("page")]
+    public async Task<IActionResult> GetPage([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var page = await _service.GetPageAsync(pageNumber, pageSize);
+        return Ok(page);
+    }
 }

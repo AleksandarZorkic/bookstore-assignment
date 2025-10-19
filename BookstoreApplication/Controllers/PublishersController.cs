@@ -12,8 +12,9 @@ public class PublishersController : ControllerBase
     private readonly IPublisherService _service;
     public PublishersController(IPublisherService service) => _service = service;
 
-    [HttpGet] 
-    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] string? sort)
+        => Ok(await _service.GetAllSortedAsync(sort));
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetOne(int id)
@@ -39,4 +40,5 @@ public class PublishersController : ControllerBase
         await _service.DeleteAsync(id);
         return NoContent();
     }
+    
 }

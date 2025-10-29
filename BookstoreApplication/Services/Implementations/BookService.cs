@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using BookstoreApplication.Models;
 using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
@@ -7,6 +8,7 @@ using BookstoreApplication.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using BookstoreApplication.Services.Implementations;
 using Microsoft.Extensions.Logging;
+using AutoMapper.QueryableExtensions;
 
 namespace BookstoreApplication.Services.Implementations
 {
@@ -121,6 +123,82 @@ namespace BookstoreApplication.Services.Implementations
                 _log.LogError(ex, "Delete failed due to DB constraint (id={BookId})", id);
                 throw new ConflictException("Operacija nije dozvoljena zbog referencijalnih ograničenja.");
             }
+        }
+        public async Task<IEnumerable<BookDto>> GetAllSortedAsync(string? sort)
+        {
+            var q = _books.QueryWithIncludes(asNoTracking: true);
+
+            var (by, dir) = ParseSort(sort);                
+            q = ApplySort(q, (by, dir));
+
+            return await q.ProjectTo<BookDto>(_mapper.ConfigurationProvider)
+                          .ToListAsync();
+        }
+
+        private static (BookSortBy by, SortDirection dir) ParseSort(string? sort)
+        {
+            var s = (sort ?? "title_asc").Trim().ToLowerInvariant();
+            return s switch
+            {
+                "title_desc" => (BookSortBy.Title, SortDirection.Desc),
+                "date_asc" => (BookSortBy.PublishedDate, SortDirection.Asc),
+                "date_desc" => (BookSortBy.PublishedDate, SortDirection.Desc),
+                "author_asc" => (BookSortBy.AuthorName, SortDirection.Asc),
+                "author_desc" => (BookSortBy.AuthorName, SortDirection.Desc),
+                _ => (BookSortBy.Title, SortDirection.Asc),
+            };
+        }
+
+        private static IQueryable<Book> ApplySort(IQueryable<Book> q, (BookSortBy by, SortDirection dir) s)
+        {
+            return s.by switch
+            {
+                BookSortBy.PublishedDate => s.dir == SortDirection.Desc
+                    ? q.OrderByDescending(b => b.PublishedDate)
+                    : q.OrderBy(b => b.PublishedDate),
+
+                BookSortBy.AuthorName => s.dir == SortDirection.Desc
+                    ? q.OrderByDescending(b => b.Author!.FullName)
+                    : q.OrderBy(b => b.Author!.FullName),
+
+                _ => s.dir == SortDirection.Desc
+                    ? q.OrderByDescending(b => b.Title)
+                    : q.OrderBy(b => b.Title),
+            };
+        }
+
+        public async Task<IEnumerable<BookDto>> SearchAsync(BookSearchRequestDto r)
+        {
+            var q = _books.QueryWithIncludes(asNoTracking: true);
+
+            if (!string.IsNullOrWhiteSpace(r.TitleContains))
+            {
+                q = q.Where(b => EF.Functions.ILike(b.Title, $"%{r.TitleContains}%"));
+            }
+            if (r.PublishedFrom.HasValue)
+                q = q.Where(b => b.PublishedDate >= r.PublishedFrom.Value);
+
+            if (r.PublishedTo.HasValue)
+                q = q.Where(b => b.PublishedDate <= r.PublishedTo.Value);
+
+            if (r.AuthorId.HasValue)
+                q = q.Where(b => b.AuthorId == r.AuthorId.Value);
+
+            if (!string.IsNullOrWhiteSpace(r.AuthorNameContains))
+            {
+                q = q.Where(b => b.Author != null &&
+                                 EF.Functions.ILike(b.Author.FullName, $"%{r.AuthorNameContains}%"));
+            }
+            if (r.AuthorBornFrom.HasValue)
+                q = q.Where(b => b.Author != null && b.Author.DateOfBirth >= r.AuthorBornFrom.Value);
+
+            if (r.AuthorBornTo.HasValue)
+                q = q.Where(b => b.Author != null && b.Author.DateOfBirth <= r.AuthorBornTo.Value);
+
+            q = ApplySort(q, (r.SortBy, r.Direction));
+
+            return await q.ProjectTo<BookDto>(_mapper.ConfigurationProvider)
+                          .ToListAsync();
         }
     }
 }

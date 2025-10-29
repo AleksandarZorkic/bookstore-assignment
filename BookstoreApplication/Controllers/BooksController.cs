@@ -1,9 +1,7 @@
-﻿using BookstoreApplication.Models;
-using Microsoft.AspNetCore.Mvc;
-using BookstoreApplication.Repositories.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc;
+using BookstoreApplication.Models;
 using BookstoreApplication.Services.Interfaces;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using BookstoreApplication.DTOs;
 
 namespace BookstoreApplication.Controllers
 {
@@ -15,7 +13,12 @@ namespace BookstoreApplication.Controllers
         public BooksController(IBookService service) => _service = service;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
+        public async Task<IActionResult> GetAll([FromQuery] string? sort = null)
+            => Ok(await _service.GetAllSortedAsync(sort));
+
+        [HttpPost("search")]
+        public async Task<IActionResult> Search([FromBody] BookSearchRequestDto request)
+            => Ok(await _service.SearchAsync(request));
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOne(int id)
@@ -23,6 +26,7 @@ namespace BookstoreApplication.Controllers
             var dto = await _service.GetByIdAsync(id);
             return dto is null ? NotFound() : Ok(dto);
         }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Book dto)
         {
@@ -30,7 +34,7 @@ namespace BookstoreApplication.Controllers
             return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
         }
 
-        [HttpPut("{id:int}")] 
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Book dto)
             => Ok(await _service.UpdateAsync(id, dto));
 

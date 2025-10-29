@@ -9,6 +9,8 @@ using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.Middleware;
 using Serilog;
 using AutoMapper;
+using System.Text.Json.Serialization;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +49,12 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddAutoMapper(typeof(BookstoreApplication.Mapping.MappingProfile).Assembly);
 
 builder.Services.AddGlobalExceptionHandling();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 var app = builder.Build();
 

@@ -11,6 +11,11 @@ using Serilog;
 using AutoMapper;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.OpenApi.Models;
+using BookstoreApplication.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +40,30 @@ builder.Services.AddControllers()
 
 // 3) Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bookstore API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Bearer {token}"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme, Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // 4) CORS za SPA 
 builder.Services.AddCors(o => o.AddPolicy("spa", p =>
@@ -52,6 +80,7 @@ builder.Services.AddScoped<IAwardRepository, AwardRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 
 builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPublisherService, PublisherService>();
 builder.Services.AddScoped<IAwardService, AwardService>();
 builder.Services.AddScoped<IBookService, BookService>();
@@ -60,7 +89,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
 builder.Services.AddGlobalExceptionHandling();
 
 // 6) Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(opt =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 {
     opt.User.RequireUniqueEmail = true;
     opt.Password.RequireDigit = true;
@@ -72,7 +101,33 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(opt =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+
+        NameClaimType = ClaimTypes.Name,
+        RoleClaimType = ClaimTypes.Role
+       
+    };
+});
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();

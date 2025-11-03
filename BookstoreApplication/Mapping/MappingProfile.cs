@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BookstoreApplication.DTOs;
+using BookstoreApplication.DTOs.UserDto;
 using BookstoreApplication.Models;
 
 namespace BookstoreApplication.Mapping
@@ -16,6 +17,9 @@ namespace BookstoreApplication.Mapping
             CreateMap<Book, BookDetailsDto>()
                 .ForMember(d => d.AuthorFullName, m => m.MapFrom(s => s.Author != null ? s.Author.FullName : ""))
                 .ForMember(d => d.PublisherName, m => m.MapFrom(s => s.Publisher != null ? s.Publisher.Name : ""));
+
+            CreateMap<ApplicationUser, ProfileDto>()
+                .ForMember(d => d.Username, opt => opt.MapFrom(s => s.UserName));
         }
 
         private static int YearsSince(DateTime date)

@@ -33,14 +33,17 @@ namespace BookstoreApplication.Services.Implementations
                 Email = data.Email,
                 Name = data.Name,
                 Surname = data.Surname,
+                EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, data.Password);
+
             if (!result.Succeeded)
-            {
-                var msg = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new BadHttpRequestException(msg);
-            }
+                throw new BadHttpRequestException(string.Join("; ", result.Errors.Select(e => e.Description)));
+        
+            var roleResult = await _userManager.AddToRoleAsync(user, "Bibliotekar");
+            if (!roleResult.Succeeded)
+                throw new BadHttpRequestException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
         }
 
         public async Task<string> LoginAsync(LoginDto data)
@@ -55,15 +58,18 @@ namespace BookstoreApplication.Services.Implementations
 
         private async Task<string> GenerateJwt(ApplicationUser user)
             {
-                var claims = new List<Claim>
-                {
-                  new Claim(JwtRegisteredClaimNames.Sub, user.Id),  
-                  new Claim("username", user.UserName),
-                  new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) 
-                };
+            var claims = new List<Claim> {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty), 
+                new Claim("username", user.UserName ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var roles = await _userManager.GetRolesAsync(user);
+                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 var token = new JwtSecurityToken(
                   issuer: _configuration["Jwt:Issuer"],

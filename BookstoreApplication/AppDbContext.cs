@@ -1,6 +1,7 @@
 ﻿using BookstoreApplication.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace BookstoreApplication
@@ -81,6 +82,13 @@ namespace BookstoreApplication
                     .HasForeignKey(b => b.PublisherId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = "role-biblio-id", Name = "Bibliotekar", NormalizedName = "BIBLIOTEKAR", ConcurrencyStamp = "cs1" },
+                new IdentityRole { Id = "role-urednik-id", Name = "Urednik", NormalizedName = "UREDNIK", ConcurrencyStamp = "cs2" }
+            );
+
+
             // === SEED PODACI (v3) ===
             modelBuilder.Entity<Publisher>().HasData(
                 new Publisher { Id = 1, Name = "Penguin Books", Address = "80 Strand, London", Website = "https://penguin.co.uk" },
@@ -146,6 +154,70 @@ namespace BookstoreApplication
                 new AuthorAward { AuthorId = 5, AwardId = 3, YearAwarded = 1970 }
             );
 
+            var u1 = new ApplicationUser
+            {
+                Id = "user-urednik-1",
+                UserName = "urednik1",
+                NormalizedUserName = "UREDNIK1",
+                Email = "urednik1@biblioteka.com",
+                NormalizedEmail = "UREDNIK1@BIBLIOTEKA.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAEACiMOTSBAIcnQk9wEBEA/qdrm3UemBBof9VgRrlvEcniJCDlriPbIvHTUWYpg5kuQ==",
+                SecurityStamp = "9e8b281e-fbc2-4cd1-aab5-a02df6166468",
+                ConcurrencyStamp = "b535b366-ea99-448e-ad9a-fdd70e579f27",
+                Name = "Urednik",
+                Surname = "Prvi"
+            };
+
+            var u2 = new ApplicationUser
+            {
+                Id = "user-urednik-2",
+                UserName = "urednik2",
+                NormalizedUserName = "UREDNIK2",
+                Email = "urednik2@biblioteka.com",
+                NormalizedEmail = "UREDNIK2@BIBLIOTEKA.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAELquf/7MEr6z/q/HjUr4YVhSCZhc1vVfEAMdIcxcVYjwPatpn1luBCzTkHVAjWpdDQ==",
+                SecurityStamp = "ada5ff65-a5c2-4309-8643-bb98c648f5fb",
+                ConcurrencyStamp = "5a1d86b1-39b7-463e-9b13-218c9023c82b"
+            };
+
+            var u3 = new ApplicationUser
+            {
+                Id = "user-urednik-3",
+                UserName = "urednik3",
+                NormalizedUserName = "UREDNIK3",
+                Email = "urednik3@biblioteka.com",
+                NormalizedEmail = "UREDNIK3@BIBLIOTEKA.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAEL894LICQk6+LQGwiiVbELAskhk4fjWpAqzJ6rRF9lv8q74F6qMias6mM5H7xBFYqg==",
+                SecurityStamp = "01fa1d41-5f06-4dd0-92c1-1ef9c43f0987",
+                ConcurrencyStamp = "52da9751-5bef-4fe6-9715-0a8699ea733a"
+            };
+
+            var b1 = new ApplicationUser
+            {
+                Id = "user-biblio-1",
+                UserName = "biblio1",
+                NormalizedUserName = "BIBLIO1",
+                Email = "biblio1@biblioteka.com",
+                NormalizedEmail = "BIBLIO1@BIBLIOTEKA.COM",
+                EmailConfirmed = true,
+                PasswordHash = "AQAAAAIAAYagAAAAEBhOFhUG/S2uCEetAY5/ImfdCtPFtxu+28R05wK9NJO/GX22MFPBn7y2ppdThe56QA==",
+                SecurityStamp = "b609a2b5-128f-43f8-8720-ed7710073ed2",
+                ConcurrencyStamp = "07636b11-9fd5-437d-a9f7-a2374af6aacf"
+            };
+
+            modelBuilder.Entity<ApplicationUser>().HasData(u1, u2, u3, b1);
+
+            // === Seed veze korisnik–rola ===
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string> { UserId = "user-urednik-1", RoleId = "role-urednik-id" },
+                new IdentityUserRole<string> { UserId = "user-urednik-2", RoleId = "role-urednik-id" },
+                new IdentityUserRole<string> { UserId = "user-urednik-3", RoleId = "role-urednik-id" },
+
+                new IdentityUserRole<string> { UserId = "user-biblio-1", RoleId = "role-biblio-id" }
+            );
         }
     }
 }

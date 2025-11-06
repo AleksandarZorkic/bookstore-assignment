@@ -1,4 +1,5 @@
-﻿using BookstoreApplication.Mapping;
+﻿using System;
+using BookstoreApplication.Mapping;
 using Microsoft.EntityFrameworkCore;
 using BookstoreApplication;
 using BookstoreApplication.Repositories.Interfaces;
@@ -132,28 +133,60 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Ovo je kod koji sam ubacio kako bih generisao password hash za korisnike preko PowerShell-a
+#if DEBUG
+if (Environment.GetEnvironmentVariable("GEN_HASH") == "1")
+{
+    string Make(string userName, string password, string? sec = null, string? conc = null)
+    {
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var u = new ApplicationUser
+        {
+            UserName = userName,
+            EmailConfirmed = true,
+            SecurityStamp = sec ?? Guid.NewGuid().ToString(),
+            ConcurrencyStamp = conc ?? Guid.NewGuid().ToString()
+        };
+        var hash = hasher.HashPassword(u, password);
+        Console.WriteLine($"{userName} PasswordHash: {hash}");
+        Console.WriteLine($"{userName} SecurityStamp: {u.SecurityStamp}");
+        Console.WriteLine($"{userName} ConcurrencyStamp: {u.ConcurrencyStamp}");
+        Console.WriteLine();
+        return hash;
+    }
+
+    Make("urednik1", "Aa!123456");
+    Make("urednik2", "Aa!123456");
+    Make("urednik3", "Aa!123456");
+    Make("biblio1", "Aa!123456");
+
+    // prekini proces da ne startuje server
+    Environment.Exit(0);
+}
+#endif
+
+
 // Validacija AutoMapper profila
 using (var scope = app.Services.CreateScope())
 {
     var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseGlobalExceptionHandling();
+
+    app.UseHttpsRedirection();
+
+    app.UseCors("spa");
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }
-
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseGlobalExceptionHandling();
-
-app.UseHttpsRedirection();
-
-app.UseCors("spa");
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();

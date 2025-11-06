@@ -3,6 +3,7 @@ using System;
 using BookstoreApplication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BookstoreApplication.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104164945_SeedRoles")]
+    partial class SeedRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,74 +93,6 @@ namespace BookstoreApplication.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "user-urednik-1",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "b535b366-ea99-448e-ad9a-fdd70e579f27",
-                            Email = "urednik1@biblioteka.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            Name = "Urednik",
-                            NormalizedEmail = "UREDNIK1@BIBLIOTEKA.COM",
-                            NormalizedUserName = "UREDNIK1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEACiMOTSBAIcnQk9wEBEA/qdrm3UemBBof9VgRrlvEcniJCDlriPbIvHTUWYpg5kuQ==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "9e8b281e-fbc2-4cd1-aab5-a02df6166468",
-                            Surname = "Prvi",
-                            TwoFactorEnabled = false,
-                            UserName = "urednik1"
-                        },
-                        new
-                        {
-                            Id = "user-urednik-2",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "5a1d86b1-39b7-463e-9b13-218c9023c82b",
-                            Email = "urednik2@biblioteka.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "UREDNIK2@BIBLIOTEKA.COM",
-                            NormalizedUserName = "UREDNIK2",
-                            PasswordHash = "AQAAAAIAAYagAAAAELquf/7MEr6z/q/HjUr4YVhSCZhc1vVfEAMdIcxcVYjwPatpn1luBCzTkHVAjWpdDQ==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "ada5ff65-a5c2-4309-8643-bb98c648f5fb",
-                            TwoFactorEnabled = false,
-                            UserName = "urednik2"
-                        },
-                        new
-                        {
-                            Id = "user-urednik-3",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "52da9751-5bef-4fe6-9715-0a8699ea733a",
-                            Email = "urednik3@biblioteka.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "UREDNIK3@BIBLIOTEKA.COM",
-                            NormalizedUserName = "UREDNIK3",
-                            PasswordHash = "AQAAAAIAAYagAAAAEL894LICQk6+LQGwiiVbELAskhk4fjWpAqzJ6rRF9lv8q74F6qMias6mM5H7xBFYqg==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "01fa1d41-5f06-4dd0-92c1-1ef9c43f0987",
-                            TwoFactorEnabled = false,
-                            UserName = "urednik3"
-                        },
-                        new
-                        {
-                            Id = "user-biblio-1",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "07636b11-9fd5-437d-a9f7-a2374af6aacf",
-                            Email = "biblio1@biblioteka.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "BIBLIO1@BIBLIOTEKA.COM",
-                            NormalizedUserName = "BIBLIO1",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBhOFhUG/S2uCEetAY5/ImfdCtPFtxu+28R05wK9NJO/GX22MFPBn7y2ppdThe56QA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "b609a2b5-128f-43f8-8720-ed7710073ed2",
-                            TwoFactorEnabled = false,
-                            UserName = "biblio1"
-                        });
                 });
 
             modelBuilder.Entity("BookstoreApplication.Models.Author", b =>
@@ -631,15 +566,13 @@ namespace BookstoreApplication.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "role-biblio-id",
-                            ConcurrencyStamp = "cs1",
+                            Id = "ae4637db-259c-4f3a-b59f-26fa28a362f3",
                             Name = "Bibliotekar",
                             NormalizedName = "BIBLIOTEKAR"
                         },
                         new
                         {
-                            Id = "role-urednik-id",
-                            ConcurrencyStamp = "cs2",
+                            Id = "b1ba13ab-e4df-4299-a734-77e183cf91c2",
                             Name = "Urednik",
                             NormalizedName = "UREDNIK"
                         });
@@ -730,28 +663,6 @@ namespace BookstoreApplication.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "user-urednik-1",
-                            RoleId = "role-urednik-id"
-                        },
-                        new
-                        {
-                            UserId = "user-urednik-2",
-                            RoleId = "role-urednik-id"
-                        },
-                        new
-                        {
-                            UserId = "user-urednik-3",
-                            RoleId = "role-urednik-id"
-                        },
-                        new
-                        {
-                            UserId = "user-biblio-1",
-                            RoleId = "role-biblio-id"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BookstoreApplication.Models;
-using BookstoreApplication.Repositories;
+using BookstoreApplication.Repositories.Interfaces;
+using BookstoreApplication.Services;
+using BookstoreApplication.Services.Interfaces;
 
 namespace BookstoreApplication.Controllers;
 
@@ -8,43 +10,33 @@ namespace BookstoreApplication.Controllers;
 [Route("api/[controller]")]
 public class AwardsController : ControllerBase
 {
-    private readonly IAwardRepository _awards;
-    public AwardsController(IAwardRepository awards) => _awards = awards;
+    private readonly IAwardService _service;
+    public AwardsController(IAwardService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _awards.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetOne(int id)
-    {
-        var a = await _awards.GetByIdAsync(id);
-        return a is null ? NotFound() : Ok(a);
-    }
+        => (await _service.GetByIdAsync(id)) is { } a ? Ok(a) : NotFound();
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] Award dto)
     {
-        var created = await _awards.AddAsync(dto);
-        await _awards.SaveChangesAsync();
+        var created = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Put(int id, [FromBody] Award dto)
     {
-        if (id != dto.Id) return BadRequest("ID mismatch.");
-        if (!await _awards.ExistsAsync(id)) return NotFound();
-
-        await _awards.UpdateAsync(dto);
-        await _awards.SaveChangesAsync();
+        await _service.UpdateAsync(id, dto);
         return Ok(dto);
     }
-
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        await _awards.DeleteAsync(id);
-        await _awards.SaveChangesAsync();
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 }

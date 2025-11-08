@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BookstoreApplication.Models;
-using BookstoreApplication.Repositories;
+using BookstoreApplication.Repositories.Interfaces;
+using BookstoreApplication.Services;
 
 namespace BookstoreApplication.Controllers;
 
@@ -8,43 +9,39 @@ namespace BookstoreApplication.Controllers;
 [Route("api/[controller]")]
 public class AuthorsController : ControllerBase
 {
-    private readonly IAuthorRepository _authors;
-    public AuthorsController(IAuthorRepository authors) => _authors = authors;
+    private readonly IAuthorService _service;
+    public AuthorsController(IAuthorService service) => _service = service;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _authors.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetOne(int id)
-    {
-        var a = await _authors.GetByIdAsync(id);
-        return a is null ? NotFound() : Ok(a);
-    }
+        => (await _service.GetByIdAsync(id)) is { } a ? Ok(a) : NotFound();
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] Author dto)
     {
-        var created = await _authors.AddAsync(dto);
-        await _authors.SaveChangesAsync();
+        var created = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetOne), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Put(int id, [FromBody] Author dto)
     {
-        if (id != dto.Id) return BadRequest("ID mismatch.");
-        if (!await _authors.ExistsAsync(id)) return NotFound();
-
-        await _authors.UpdateAsync(dto);
-        await _authors.SaveChangesAsync();
+        await _service.UpdateAsync(id, dto);
         return Ok(dto);
     }
-
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        await _authors.DeleteAsync(id);
-        await _authors.SaveChangesAsync();
+        await _service.DeleteAsync(id);
         return NoContent();
+    }
+    [HttpGet("page")]
+    public async Task<IActionResult> GetPage([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var page = await _service.GetPageAsync(pageNumber, pageSize);
+        return Ok(page);
     }
 }

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-namespace BookstoreApplication.Repositories
+namespace BookstoreApplication.Repositories.Interfaces
 {
     public interface IRepository<T> where T : class
     {

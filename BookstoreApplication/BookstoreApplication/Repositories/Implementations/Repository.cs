@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using BookstoreApplication.Models;
+﻿using BookstoreApplication.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
-namespace BookstoreApplication.Repositories
+namespace BookstoreApplication.Repositories.Implementations
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -45,7 +45,7 @@ namespace BookstoreApplication.Repositories
         }
 
         public Task<bool> ExistsAsync(int id)
-            => _set.AnyAsync(e => EF.Property<int>(e, "id") == id);
+            => _set.AnyAsync(e => EF.Property<int>(e, "Id") == id);
 
         public Task<int> SaveChangesAsync() => _db.SaveChangesAsync();
     }

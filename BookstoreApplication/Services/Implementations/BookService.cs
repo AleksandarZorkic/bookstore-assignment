@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using BookstoreApplication.Models;
-using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.DTOs;
 using BookstoreApplication.Exceptions;
@@ -9,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using BookstoreApplication.Services.Implementations;
 using Microsoft.Extensions.Logging;
 using AutoMapper.QueryableExtensions;
+using BookstoreApplication.Models.Interfaces;
+using BookstoreApplication.Models.Entities;
 
 namespace BookstoreApplication.Services.Implementations
 {

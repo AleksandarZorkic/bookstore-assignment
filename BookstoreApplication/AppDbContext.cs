@@ -1,7 +1,7 @@
-﻿using BookstoreApplication.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using BookstoreApplication.Models.Entities;
 
 
 namespace BookstoreApplication
@@ -14,6 +14,7 @@ namespace BookstoreApplication
         public DbSet<Publisher> Publishers { get; set; }
         public DbSet<Award> Awards { get; set; }
         public DbSet<AuthorAward> AuthorAwards { get; set; }
+        public DbSet<ComicIssue> ComicIssues { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -87,6 +88,12 @@ namespace BookstoreApplication
                 new IdentityRole { Id = "role-biblio-id", Name = "Bibliotekar", NormalizedName = "BIBLIOTEKAR", ConcurrencyStamp = "cs1" },
                 new IdentityRole { Id = "role-urednik-id", Name = "Urednik", NormalizedName = "UREDNIK", ConcurrencyStamp = "cs2" }
             );
+
+            modelBuilder.Entity<ComicIssue>(e =>
+            {
+                e.Property(x => x.Title).HasMaxLength(300).IsRequired();
+                e.HasIndex(x => x.ExternalIssueId);
+            });
 
 
             // === SEED PODACI (v3) ===

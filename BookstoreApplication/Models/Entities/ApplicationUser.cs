@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace BookstoreApplication.Models
+namespace BookstoreApplication.Models.Entities
 {
     public class ApplicationUser : IdentityUser
     {

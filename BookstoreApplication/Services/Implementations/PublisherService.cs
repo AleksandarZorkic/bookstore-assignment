@@ -1,7 +1,7 @@
 ﻿using System.Reflection.Metadata.Ecma335;
 using BookstoreApplication.Exceptions;
-using BookstoreApplication.Models;
-using BookstoreApplication.Repositories.Interfaces;
+using BookstoreApplication.Models.Entities;
+using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Services.Interfaces;
 
 namespace BookstoreApplication.Services.Implementations

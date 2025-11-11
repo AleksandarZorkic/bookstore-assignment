@@ -1,5 +1,4 @@
 ﻿using BookstoreApplication.DTOs.UserDto;
-using BookstoreApplication.Models;
 using Microsoft.AspNetCore.Identity;
 using BookstoreApplication.Services.Interfaces;
 using AutoMapper;
@@ -7,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BookstoreApplication.Models.Entities;
 
 namespace BookstoreApplication.Services.Implementations
 {
@@ -95,5 +95,7 @@ namespace BookstoreApplication.Services.Implementations
 
             return _mapper.Map<ProfileDto>(user);
         }
-    }      
+
+        public Task<string> IssueJwtAsync(ApplicationUser user) => GenerateJwt(user);
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BookstoreApplication.Models
+namespace BookstoreApplication.Models.Entities
 {
     public class AuthorAward
     {

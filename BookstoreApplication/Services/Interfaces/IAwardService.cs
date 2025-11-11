@@ -1,4 +1,4 @@
-﻿using BookstoreApplication.Models;
+﻿using BookstoreApplication.Models.Entities;
 
 namespace BookstoreApplication.Services.Interfaces
 {

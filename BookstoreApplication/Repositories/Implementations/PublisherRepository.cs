@@ -1,5 +1,5 @@
-﻿using BookstoreApplication.Models;
-using BookstoreApplication.Repositories.Interfaces;
+﻿using BookstoreApplication.Models.Entities;
+using BookstoreApplication.Models.Interfaces;
 
 namespace BookstoreApplication.Repositories.Implementations
 {

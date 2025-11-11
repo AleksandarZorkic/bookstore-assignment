@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BookstoreApplication.DTOs;
 using BookstoreApplication.DTOs.UserDto;
-using BookstoreApplication.Models;
+using BookstoreApplication.Models.Entities;
 
 namespace BookstoreApplication.Mapping
 {

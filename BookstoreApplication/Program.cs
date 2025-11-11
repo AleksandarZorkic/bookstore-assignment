@@ -2,7 +2,6 @@
 using BookstoreApplication.Mapping;
 using Microsoft.EntityFrameworkCore;
 using BookstoreApplication;
-using BookstoreApplication.Repositories.Interfaces;
 using BookstoreApplication.Repositories.Implementations;
 using BookstoreApplication.Services;
 using BookstoreApplication.Services.Implementations;
@@ -16,7 +15,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.OpenApi.Models;
-using BookstoreApplication.Models;
+using BookstoreApplication.Models.Interfaces;
+using BookstoreApplication.Models.Entities;
+using System.Net.Http.Headers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,34 +103,55 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+// JWT kao default auth/challenge
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateLifetime = true,
-
         ValidateIssuer = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-
         ValidateAudience = true,
         ValidAudience = builder.Configuration["Jwt:Audience"],
-
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-
+        IssuerSigningKey = new SymmetricSecurityKey(
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+        ),
         NameClaimType = ClaimTypes.Name,
         RoleClaimType = ClaimTypes.Role
-       
     };
 });
 
+builder.Services.AddAuthentication()
+    .AddGoogle(o =>
+    {
+        o.ClientId = builder.Configuration["GoogleAuth:ClientId"]!;
+        o.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"]!;
+        o.SignInScheme = IdentityConstants.ExternalScheme;
+    });
+
 builder.Services.AddAuthorization();
+
+// ComicVine HTTP client
+builder.Services.AddHttpClient<IComicsClient, ComicVineClient>(http =>
+{
+    http.BaseAddress = new Uri("https://comicvine.gamespot.com/api/");
+    http.DefaultRequestHeaders.UserAgent.ParseAdd("BookstoreApp/1.0");
+    http.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json"));
+
+    Log.Information("Has ComicVine key: {HasKey}",
+    !string.IsNullOrWhiteSpace(builder.Configuration["ComicVine:ApiKey"]));
+});
+
+// Repozitorijum i servis
+builder.Services.AddScoped<IComicIssueRepository, ComicIssueRepository>();
+builder.Services.AddScoped<IComicsService, ComicsService>();
 
 var app = builder.Build();
 
@@ -171,22 +193,22 @@ using (var scope = app.Services.CreateScope())
 {
     var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseGlobalExceptionHandling();
-
-    app.UseHttpsRedirection();
-
-    app.UseCors("spa");
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    app.MapControllers();
-
-    app.Run();
 }
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseGlobalExceptionHandling();
+app.UseSerilogRequestLogging();
+
+app.UseCors("spa");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+

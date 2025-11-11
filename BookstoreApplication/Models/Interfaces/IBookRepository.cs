@@ -1,6 +1,6 @@
-﻿using BookstoreApplication.Models;
+﻿using BookstoreApplication.Models.Entities;
 
-namespace BookstoreApplication.Repositories.Interfaces
+namespace BookstoreApplication.Models.Interfaces
 {
     public interface IBookRepository : IRepository<Book>
     {

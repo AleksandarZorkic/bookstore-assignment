@@ -1,5 +1,5 @@
-﻿using BookstoreApplication.Models;
-using BookstoreApplication.Repositories.Interfaces;
+﻿using BookstoreApplication.Models.Entities;
+using BookstoreApplication.Models.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookstoreApplication.Repositories.Implementations

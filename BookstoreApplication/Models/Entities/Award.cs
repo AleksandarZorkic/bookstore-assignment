@@ -1,4 +1,4 @@
-﻿namespace BookstoreApplication.Models
+﻿namespace BookstoreApplication.Models.Entities
 {
     public class Award
     {

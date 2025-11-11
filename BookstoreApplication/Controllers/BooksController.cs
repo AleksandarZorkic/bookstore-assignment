@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using BookstoreApplication.Models;
 using BookstoreApplication.Services.Interfaces;
 using BookstoreApplication.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using BookstoreApplication.Models.Entities;
 
 namespace BookstoreApplication.Controllers
 {

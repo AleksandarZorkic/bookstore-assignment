@@ -15,6 +15,7 @@ namespace BookstoreApplication
         public DbSet<Award> Awards { get; set; }
         public DbSet<AuthorAward> AuthorAwards { get; set; }
         public DbSet<ComicIssue> ComicIssues { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,6 +83,9 @@ namespace BookstoreApplication
                     .WithMany()
                     .HasForeignKey(b => b.PublisherId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                cfg.Property(b => b.AverageRating)
+                    .HasPrecision(3, 2);
             });
 
             modelBuilder.Entity<IdentityRole>().HasData(
@@ -225,6 +229,21 @@ namespace BookstoreApplication
 
                 new IdentityUserRole<string> { UserId = "user-biblio-1", RoleId = "role-biblio-id" }
             );
+
+            modelBuilder.Entity<Review>(cfg =>
+            {
+                cfg.Property(r => r.Rating).IsRequired();
+                cfg.Property(r => r.CreatedAt).HasColumnType("timestamp with time zone");
+
+                cfg.HasOne(r => r.Book)
+                    .WithMany(b => b.Reviews)
+                    .HasForeignKey(r => r.BookId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                cfg.ToTable(t => t.HasCheckConstraint("CK_Review_Rating", "\"Rating\" >= 1 AND \"Rating\" <= 5"));
+            
+                cfg.HasIndex(r => r.BookId);
+            });
         }
     }
 }

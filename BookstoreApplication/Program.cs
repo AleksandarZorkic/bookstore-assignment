@@ -18,6 +18,7 @@ using Microsoft.OpenApi.Models;
 using BookstoreApplication.Models.Interfaces;
 using BookstoreApplication.Models.Entities;
 using System.Net.Http.Headers;
+using BookstoreApplication.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -102,6 +103,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
+
+// UoW
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Reviews repo + servic
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 // JWT kao default auth/challenge
 builder.Services.AddAuthentication(options =>

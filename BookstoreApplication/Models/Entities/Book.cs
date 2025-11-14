@@ -11,5 +11,7 @@
         public Author? Author { get; set; }
         public int PublisherId { get; set; }
         public Publisher? Publisher { get; set; }
+        public decimal AverageRating { get; set; } = 0m;
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

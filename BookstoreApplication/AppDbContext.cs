@@ -52,6 +52,11 @@ namespace BookstoreApplication
                     .HasColumnType("date");
             });
 
+            // Indeks nad imenom autora, zbog pretrage po FullName
+            modelBuilder.Entity<Author>()
+                .HasIndex(a => a.FullName)
+                .HasDatabaseName("IX_Authors_FullName");
+
             modelBuilder.Entity<AuthorAward>(cfg =>
             {
                 cfg.ToTable("AuthorAwardBridge", t =>
